@@ -34,29 +34,32 @@
               </div>
               
             </div>
-            <div class="content"><pre><code class="lang-coffeescript">{applyStylesheet} = require(<span class="string">"./util"</span>)
+            <div class="content"><pre><code class="lang-coffeescript">Observable = require <span class="string">"observable"</span>
+Touchy = require(<span class="string">"./lib/touchy"</span>)
+
+{applyStylesheet} = require(<span class="string">"./util"</span>)
 
 applyStylesheet(require(<span class="string">"./style"</span>))
 
 document.body.appendChild require(<span class="string">"./template"</span>)()
 
-Observable = require <span class="string">"observable"</span>
-
-Touchy = require(<span class="string">"./lib/touchy"</span>)
-
 {x:saturation, y:inverseLightness} = Touchy(document.querySelector(<span class="string">".overlay.w"</span>))
 {y:hue} = Touchy(document.querySelector(<span class="string">".hue"</span>))
 
+swatch = document.querySelector(<span class="string">".swatch"</span>)
+
 hue.observe (hueValue) -&gt;
   document.body.style.backgroundColor = <span class="string">"hsl(<span class="subst">#{hueValue * <span class="number">360</span>}</span>, 100%, 54%)"</span>
+  update()
 
 <span class="function"><span class="title">update</span></span> = -&gt;
+  swatch.style.backgroundColor = <span class="string">"hsl(<span class="subst">#{hue() * <span class="number">360</span>}</span>, <span class="subst">#{saturation() * <span class="number">100</span>}</span>%, <span class="subst">#{lightness() * <span class="number">100</span>}</span>%)"</span>
 
 lightness = Observable(<span class="number">1</span>)
 
-lightness.observe (value) -&gt;
+lightness.observe update
 
-saturation.observe (value) -&gt;
+saturation.observe update
 
 inverseLightness.observe (value) -&gt;
   lightness(<span class="number">1</span> - value)</code></pre>
