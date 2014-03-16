@@ -6,3 +6,5 @@ Color Picker
     applyStylesheet(require("./style"))
     
     document.body.appendChild require("./template")()
+
+    
