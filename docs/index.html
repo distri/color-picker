@@ -38,7 +38,28 @@
 
 applyStylesheet(require(<span class="string">"./style"</span>))
 
-document.body.appendChild require(<span class="string">"./template"</span>)()</code></pre>
+document.body.appendChild require(<span class="string">"./template"</span>)()
+
+Observable = require <span class="string">"observable"</span>
+
+Touchy = require(<span class="string">"./lib/touchy"</span>)
+
+{x:saturation, y:inverseLightness} = Touchy(document.querySelector(<span class="string">".overlay.w"</span>))
+{y:hue} = Touchy(document.querySelector(<span class="string">".hue"</span>))
+
+hue.observe (hueValue) -&gt;
+  document.body.style.backgroundColor = <span class="string">"hsl(<span class="subst">#{hueValue * <span class="number">360</span>}</span>, 100%, 54%)"</span>
+
+<span class="function"><span class="title">update</span></span> = -&gt;
+
+lightness = Observable(<span class="number">1</span>)
+
+lightness.observe (value) -&gt;
+
+saturation.observe (value) -&gt;
+
+inverseLightness.observe (value) -&gt;
+  lightness(<span class="number">1</span> - value)</code></pre>
 </div>
         </li>
         
