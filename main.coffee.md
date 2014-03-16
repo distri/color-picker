@@ -13,6 +13,8 @@ Color Picker
     {x:saturation, y:inverseLightness} = Touchy(document.querySelector(".overlay.w"))
     {y:hue} = Touchy(document.querySelector(".hue"))
 
+    hue(0)
+
     swatch = document.querySelector(".swatch")
 
     hue.observe (hueValue) ->
