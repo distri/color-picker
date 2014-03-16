@@ -3,15 +3,81 @@ Touchy
 
     Observable = require "observable"
 
+    MAX = 1
+
 Get x,y position changes from mouse and touch events in an html element.
 
-    module.exports = (element, {x,y}) ->
+    module.exports = (element, {x,y}={}) ->
+
       x = Observable(x)
       y = Observable(y)
 
+      # Keep track of if the mouse is active in the element
+      active = false
+
+      emit = (e) ->
+        position = localPosition(element, e)
+
+        x(position.x)
+        y(position.y)
+
+When we click within the element emit the values for the position we clicked at.
+
+      listen element, "mousedown", (e) ->
+        active = true
+
+        emit e
+
+Handle touch starts
+
+      listen element, "touchstart", (e) ->
+        # NOTE: Global `event`
+        processTouches event, emit
+
+When the mouse moves apply a change for each x value in the intervening positions.
+
+      listen element, "mousemove", (e) ->
+        emit(e) if active
+
+Handle moves outside of the element.
+
+      listen document, "mousemove", (e) ->
+        emit(e) if active
+
+Handle touch moves.
+
+      listen element, "touchmove", (e) ->
+        # NOTE: Global `event`
+        processTouches event, emit
+
+Handle releases.
+
+      listen element, "mouseup", (e) ->
+        emit e
+
+        active = false
+
+        return
+
+Handle touch ends.
+
+      listen element, "touchend", (e) ->
+        # NOTE: Global `event`
+        processTouches event, emit
+
+Whenever the mouse button is released from anywhere, deactivate. Be sure to emit 
+the position if it was activated within the element.
+
+      listen document, "mouseup", (e) ->
+        emit(e) if active
+    
+        active = false
+    
+        return
+
       x: x
       y: y
-    
+
 Helpers
 -------
 
