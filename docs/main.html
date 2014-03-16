@@ -46,6 +46,8 @@ document.body.appendChild require(<span class="string">"./template"</span>)()
 {x:saturation, y:inverseLightness} = Touchy(document.querySelector(<span class="string">".overlay.w"</span>))
 {y:hue} = Touchy(document.querySelector(<span class="string">".hue"</span>))
 
+hue(<span class="number">0</span>)
+
 swatch = document.querySelector(<span class="string">".swatch"</span>)
 
 hue.observe (hueValue) -&gt;
