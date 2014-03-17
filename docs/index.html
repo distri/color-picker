@@ -127,9 +127,20 @@ lightness = Observable(<span class="number">0.54</span>)</code></pre>
   document.body.style.backgroundColor = <span class="string">"hsl(<span class="subst">#{hue() * <span class="number">360</span>}</span>, 100%, 54%)"</span>
   value = <span class="string">"hsl(<span class="subst">#{hue() * <span class="number">360</span>}</span>, <span class="subst">#{saturation() * <span class="number">100</span>}</span>%, <span class="subst">#{lightness() * <span class="number">100</span>}</span>%)"</span>
   swatch.style.backgroundColor = value
-  notifyParent(value)
+  notifyParent(value)</code></pre>
+</div>
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Throttle notifications to parent to limit to <code>20/s</code>.</p>
 
-notifyParent = Throttle(<span class="number">0.05</span>) (value) -&gt;
+            </div>
+            <div class="content"><pre><code class="lang-coffeescript">notifyParent = Throttle(<span class="number">0.05</span>) (value) -&gt;
   postmaster.sendToParent
     value: value
 
@@ -140,10 +151,10 @@ hue.observe update</code></pre>
         </li>
         
         
-        <li id="section-8">
+        <li id="section-9">
             <div class="annotation">
               <div class="pilwrap">
-                <a class="pilcrow" href="#section-8">&#182;</a>
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>Initialize values. </p>
 
