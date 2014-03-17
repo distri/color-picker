@@ -53,6 +53,8 @@ Our swatch and background color update whenever a component value changes.
       swatch.style.backgroundColor = value
       notifyParent(value)
 
+Throttle notifications to parent to limit to `20/s`.
+
     notifyParent = Throttle(0.05) (value) ->
       postmaster.sendToParent
         value: value
