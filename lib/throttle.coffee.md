@@ -11,6 +11,7 @@ Throttle is a pipe generator.
       lastFired = -Infinity
       lastValue = undefined
       timeout = null
+      t = cycle * 1000 # ms
 
       (output) ->
         (input) ->
@@ -18,10 +19,11 @@ Throttle is a pipe generator.
 
           unless timeout
             currentTime = +new Date
-            currentTime - lastFired
+            delta = currentTime - lastFired
+            target = t - delta
 
             timeout = setTimeout ->
               lastFired = +new Date
               output(lastValue)
               timeout = null
-            , lastFired + (cycle / 1000)
+            , target

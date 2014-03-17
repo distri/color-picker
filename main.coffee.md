@@ -9,6 +9,7 @@ Load dependencies.
 
     Observable = require "observable"
     Touchy = require("./lib/touchy")
+    Throttle = require("./lib/throttle")
 
 Apply stylesheet.
 
@@ -50,6 +51,9 @@ Our swatch and background color update whenever a component value changes.
       document.body.style.backgroundColor = "hsl(#{hue() * 360}, 100%, 54%)"
       value = "hsl(#{hue() * 360}, #{saturation() * 100}%, #{lightness() * 100}%)"
       swatch.style.backgroundColor = value
+      notifyParent(value)
+
+    notifyParent = Throttle(0.05) (value) ->
       postmaster.sendToParent
         value: value
 
