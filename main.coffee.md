@@ -5,8 +5,6 @@ The goal of this color picker is to have a a picker that works well in almost
 any size of environment, is easily embeddable within other web applications,
 and responds instantly to mouse or touch interactions.
 
-TODO: Use postmessage to transmit the data value to the embedding application.
-
 Load dependencies.
 
     Observable = require "observable"
@@ -20,6 +18,10 @@ Apply stylesheet.
 Render template.
 
     document.body.appendChild require("./template")()
+
+Use the postmaster to send value to our parent
+
+    postmaster = require("postmaster")()
 
 Hook up observables. These map the x and y observable dimensions into names of 
 what they actually are.
@@ -46,7 +48,10 @@ Our swatch and background color update whenever a component value changes.
 
     update = ->
       document.body.style.backgroundColor = "hsl(#{hue() * 360}, 100%, 54%)"
-      swatch.style.backgroundColor = "hsl(#{hue() * 360}, #{saturation() * 100}%, #{lightness() * 100}%)"
+      value = "hsl(#{hue() * 360}, #{saturation() * 100}%, #{lightness() * 100}%)"
+      swatch.style.backgroundColor = value
+      postmaster.sendToParent
+        value: value
 
     lightness.observe update
     saturation.observe update
@@ -54,7 +59,7 @@ Our swatch and background color update whenever a component value changes.
 
 Initialize values. 
 
-    # TODO: Load from calling context
+    # TODO: Load from calling context / env
     hue(0)
     saturation(1)
     lightness(0.54)
