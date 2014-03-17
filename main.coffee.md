@@ -10,6 +10,7 @@ Load dependencies.
     Observable = require "observable"
     Touchy = require("./lib/touchy")
     Throttle = require("./lib/throttle")
+    HSL = require "./lib/hsl"
 
 Apply stylesheet.
 
@@ -20,9 +21,23 @@ Render template.
 
     document.body.appendChild require("./template")()
 
-Use the postmaster to send value to our parent
+Use the postmaster to send value to our parent, store our current value in it as well.
 
     postmaster = require("postmaster")()
+    postmaster.value = Observable()
+
+Propagate newly received values.
+
+    postmaster.value.observe (newValue) ->
+      [match, values...] = newValue.match HSL.matcher
+
+      [h, s, l] = values.map parseFloat
+
+      hue(h / 360)
+      saturation(s / 100)
+      lightness(l / 100)
+
+      notifyParent(newValue)
 
 Hook up observables. These map the x and y observable dimensions into names of 
 what they actually are.
@@ -51,7 +66,7 @@ Our swatch and background color update whenever a component value changes.
       document.body.style.backgroundColor = "hsl(#{hue() * 360}, 100%, 54%)"
       value = "hsl(#{hue() * 360}, #{saturation() * 100}%, #{lightness() * 100}%)"
       swatch.style.backgroundColor = value
-      notifyParent(value)
+      postmaster.value value
 
 Throttle notifications to parent to limit to `20/s`.
 
@@ -65,7 +80,9 @@ Throttle notifications to parent to limit to `20/s`.
 
 Initialize values. 
 
-    # TODO: Load from calling context / env
-    hue(0)
-    saturation(1)
-    lightness(0.54)
+    if location.hash
+      postmaster.value JSON.parse location.hash.substring(1)
+    else
+      hue(0)
+      saturation(1)
+      lightness(0.54)
