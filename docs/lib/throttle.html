@@ -41,6 +41,7 @@
   lastFired = -Infinity
   lastValue = <span class="literal">undefined</span>
   timeout = <span class="literal">null</span>
+  t = cycle * <span class="number">1000</span> <span class="comment"># ms</span>
 
   (output) -&gt;
     (input) -&gt;
@@ -48,13 +49,14 @@
 
       <span class="keyword">unless</span> timeout
         currentTime = +<span class="keyword">new</span> Date
-        currentTime - lastFired
+        delta = currentTime - lastFired
+        target = t - delta
 
         timeout = setTimeout -&gt;
           lastFired = +<span class="keyword">new</span> Date
           output(lastValue)
           timeout = <span class="literal">null</span>
-        , lastFired + (cycle / <span class="number">1000</span>)</code></pre>
+        , target</code></pre>
 </div>
         </li>
         

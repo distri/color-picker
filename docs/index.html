@@ -39,7 +39,8 @@ and responds instantly to mouse or touch interactions.</p>
 
             </div>
             <div class="content"><pre><code class="lang-coffeescript">Observable = require <span class="string">"observable"</span>
-Touchy = require(<span class="string">"./lib/touchy"</span>)</code></pre>
+Touchy = require(<span class="string">"./lib/touchy"</span>)
+Throttle = require(<span class="string">"./lib/throttle"</span>)</code></pre>
 </div>
         </li>
         
@@ -126,6 +127,9 @@ lightness = Observable(<span class="number">0.54</span>)</code></pre>
   document.body.style.backgroundColor = <span class="string">"hsl(<span class="subst">#{hue() * <span class="number">360</span>}</span>, 100%, 54%)"</span>
   value = <span class="string">"hsl(<span class="subst">#{hue() * <span class="number">360</span>}</span>, <span class="subst">#{saturation() * <span class="number">100</span>}</span>%, <span class="subst">#{lightness() * <span class="number">100</span>}</span>%)"</span>
   swatch.style.backgroundColor = value
+  notifyParent(value)
+
+notifyParent = Throttle(<span class="number">0.05</span>) (value) -&gt;
   postmaster.sendToParent
     value: value
 
