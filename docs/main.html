@@ -35,7 +35,6 @@
               <p>The goal of this color picker is to have a a picker that works well in almost
 any size of environment, is easily embeddable within other web applications,
 and responds instantly to mouse or touch interactions.</p>
-<p>TODO: Use postmessage to transmit the data value to the embedding application.</p>
 <p>Load dependencies.</p>
 
             </div>
@@ -77,6 +76,19 @@ applyStylesheet(require(<span class="string">"./style"</span>))</code></pre>
               <div class="pilwrap">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
+              <p>Use the postmaster to send value to our parent</p>
+
+            </div>
+            <div class="content"><pre><code class="lang-coffeescript">postmaster = require(<span class="string">"postmaster"</span>)()</code></pre>
+</div>
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
               <p>Hook up observables. These map the x and y observable dimensions into names of 
 what they actually are.</p>
 
@@ -100,10 +112,10 @@ lightness = Observable(<span class="number">0.54</span>)</code></pre>
         </li>
         
         
-        <li id="section-6">
+        <li id="section-7">
             <div class="annotation">
               <div class="pilwrap">
-                <a class="pilcrow" href="#section-6">&#182;</a>
+                <a class="pilcrow" href="#section-7">&#182;</a>
               </div>
               <p>Our swatch and background color update whenever a component value changes.</p>
 
@@ -112,7 +124,10 @@ lightness = Observable(<span class="number">0.54</span>)</code></pre>
 
 <span class="function"><span class="title">update</span></span> = -&gt;
   document.body.style.backgroundColor = <span class="string">"hsl(<span class="subst">#{hue() * <span class="number">360</span>}</span>, 100%, 54%)"</span>
-  swatch.style.backgroundColor = <span class="string">"hsl(<span class="subst">#{hue() * <span class="number">360</span>}</span>, <span class="subst">#{saturation() * <span class="number">100</span>}</span>%, <span class="subst">#{lightness() * <span class="number">100</span>}</span>%)"</span>
+  value = <span class="string">"hsl(<span class="subst">#{hue() * <span class="number">360</span>}</span>, <span class="subst">#{saturation() * <span class="number">100</span>}</span>%, <span class="subst">#{lightness() * <span class="number">100</span>}</span>%)"</span>
+  swatch.style.backgroundColor = value
+  postmaster.sendToParent
+    value: value
 
 lightness.observe update
 saturation.observe update
@@ -121,15 +136,15 @@ hue.observe update</code></pre>
         </li>
         
         
-        <li id="section-7">
+        <li id="section-8">
             <div class="annotation">
               <div class="pilwrap">
-                <a class="pilcrow" href="#section-7">&#182;</a>
+                <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
               <p>Initialize values. </p>
 
             </div>
-            <div class="content"><pre><code class="lang-coffeescript"><span class="comment"># TODO: Load from calling context</span>
+            <div class="content"><pre><code class="lang-coffeescript"><span class="comment"># TODO: Load from calling context / env</span>
 hue(<span class="number">0</span>)
 saturation(<span class="number">1</span>)
 lightness(<span class="number">0.54</span>)</code></pre>

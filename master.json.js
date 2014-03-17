@@ -21,13 +21,13 @@ window["distri/color-picker:master"]({
     "main.coffee.md": {
       "path": "main.coffee.md",
       "mode": "100644",
-      "content": "Color Picker\n============\n\nThe goal of this color picker is to have a a picker that works well in almost\nany size of environment, is easily embeddable within other web applications,\nand responds instantly to mouse or touch interactions.\n\nTODO: Use postmessage to transmit the data value to the embedding application.\n\nLoad dependencies.\n\n    Observable = require \"observable\"\n    Touchy = require(\"./lib/touchy\")\n\nApply stylesheet.\n\n    {applyStylesheet} = require(\"./util\")\n    applyStylesheet(require(\"./style\"))\n\nRender template.\n\n    document.body.appendChild require(\"./template\")()\n\nHook up observables. These map the x and y observable dimensions into names of \nwhat they actually are.\n\n    {x, y} = Touchy(document.querySelector(\".overlay.w\"))\n    {y:hue} = Touchy(document.querySelector(\".hue\"))\n\n    x.observe (newValue) ->\n      t = newValue/2\n\n      saturation(newValue)\n      lightness((1 - t) * y() + t)\n\n    y.observe (newValue) ->\n      t = x() / 2\n      lightness((1 - t) * newValue + t)\n\n    saturation = Observable(1)\n    lightness = Observable(0.54)\n\nOur swatch and background color update whenever a component value changes.\n\n    swatch = document.querySelector(\".swatch\")\n\n    update = ->\n      document.body.style.backgroundColor = \"hsl(#{hue() * 360}, 100%, 54%)\"\n      swatch.style.backgroundColor = \"hsl(#{hue() * 360}, #{saturation() * 100}%, #{lightness() * 100}%)\"\n\n    lightness.observe update\n    saturation.observe update\n    hue.observe update\n\nInitialize values. \n\n    # TODO: Load from calling context\n    hue(0)\n    saturation(1)\n    lightness(0.54)\n",
+      "content": "Color Picker\n============\n\nThe goal of this color picker is to have a a picker that works well in almost\nany size of environment, is easily embeddable within other web applications,\nand responds instantly to mouse or touch interactions.\n\nLoad dependencies.\n\n    Observable = require \"observable\"\n    Touchy = require(\"./lib/touchy\")\n\nApply stylesheet.\n\n    {applyStylesheet} = require(\"./util\")\n    applyStylesheet(require(\"./style\"))\n\nRender template.\n\n    document.body.appendChild require(\"./template\")()\n\nUse the postmaster to send value to our parent\n\n    postmaster = require(\"postmaster\")()\n\nHook up observables. These map the x and y observable dimensions into names of \nwhat they actually are.\n\n    {x, y} = Touchy(document.querySelector(\".overlay.w\"))\n    {y:hue} = Touchy(document.querySelector(\".hue\"))\n\n    x.observe (newValue) ->\n      t = newValue/2\n\n      saturation(newValue)\n      lightness((1 - t) * y() + t)\n\n    y.observe (newValue) ->\n      t = x() / 2\n      lightness((1 - t) * newValue + t)\n\n    saturation = Observable(1)\n    lightness = Observable(0.54)\n\nOur swatch and background color update whenever a component value changes.\n\n    swatch = document.querySelector(\".swatch\")\n\n    update = ->\n      document.body.style.backgroundColor = \"hsl(#{hue() * 360}, 100%, 54%)\"\n      value = \"hsl(#{hue() * 360}, #{saturation() * 100}%, #{lightness() * 100}%)\"\n      swatch.style.backgroundColor = value\n      postmaster.sendToParent\n        value: value\n\n    lightness.observe update\n    saturation.observe update\n    hue.observe update\n\nInitialize values. \n\n    # TODO: Load from calling context / env\n    hue(0)\n    saturation(1)\n    lightness(0.54)\n",
       "type": "blob"
     },
     "pixie.cson": {
       "path": "pixie.cson",
       "mode": "100644",
-      "content": "version: \"0.1.0\"\ndependencies: \n  observable: \"distri/observable:v0.1.0\"\n",
+      "content": "version: \"0.1.0\"\ndependencies: \n  observable: \"distri/observable:v0.1.0\"\n  postmaster: \"distri/postmaster:v0.2.1\"\n",
       "type": "blob"
     },
     "util.coffee.md": {
@@ -53,6 +53,12 @@ window["distri/color-picker:master"]({
       "mode": "100644",
       "content": "Touchy\n======\n\n    Observable = require \"observable\"\n\n    MAX = 1\n\nGet x,y position changes from mouse and touch events in an html element.\n\n    module.exports = (element, {x,y}={}) ->\n\n      x = Observable(x)\n      y = Observable(y)\n\n      # Keep track of if the mouse is active in the element\n      active = false\n\n      emit = (e) ->\n        position = localPosition(element, e)\n\n        x(position.x)\n        y(position.y)\n\nWhen we click within the element emit the values for the position we clicked at.\n\n      listen element, \"mousedown\", (e) ->\n        active = true\n\n        emit e\n\nHandle touch starts\n\n      listen element, \"touchstart\", (e) ->\n        # NOTE: Global `event`\n        processTouches event, emit\n\nWhen the mouse moves apply a change for each x value in the intervening positions.\n\n      listen element, \"mousemove\", (e) ->\n        emit(e) if active\n\nHandle moves outside of the element.\n\n      listen document, \"mousemove\", (e) ->\n        emit(e) if active\n\nHandle touch moves.\n\n      listen element, \"touchmove\", (e) ->\n        # NOTE: Global `event`\n        processTouches event, emit\n\nHandle releases.\n\n      listen element, \"mouseup\", (e) ->\n        emit e\n\n        active = false\n\n        return\n\nHandle touch ends.\n\n      listen element, \"touchend\", (e) ->\n        # NOTE: Global `event`\n        processTouches event, emit\n\nWhenever the mouse button is released from anywhere, deactivate. Be sure to emit \nthe position if it was activated within the element.\n\n      listen document, \"mouseup\", (e) ->\n        emit(e) if active\n    \n        active = false\n    \n        return\n\n      x: x\n      y: y\n\nHelpers\n-------\n\n    localPosition = (element, event) ->\n      rect = element.getBoundingClientRect()\n\n      point =\n        x: clamp (event.pageX - rect.left) / rect.width, 0, MAX\n        y: clamp (event.pageY - rect.top) / rect.height, 0, MAX\n\n      # Add mouse into touch identifiers as 0\n      point.identifier = (event.identifier + 1) or 0\n\n      return point\n\n    processTouches = (event, fn) ->\n      event.preventDefault()\n  \n      if event.type is \"touchend\"\n        # touchend doesn't have any touches, but does have changed touches\n        touches = event.changedTouches\n      else\n        touches = event.touches\n\n      Array::forEach.call touches, fn\n\nAttach an event listener to an element\n\n    listen = (element, event, handler) ->\n      element.addEventListener(event, handler, false)\n\nClamp a number to be within a range.\n\n    clamp = (number, min, max) ->\n      Math.min(Math.max(number, min), max)\n",
       "type": "blob"
+    },
+    "lib/throttle.coffee.md": {
+      "path": "lib/throttle.coffee.md",
+      "mode": "100644",
+      "content": "Throttle\n========\n\nA throttle is the mechanism by which the flow of a fluid is managed by constriction or obstruction.\n\n`cycle` is the minimum time in seconds that will occur between emitting data.\n\nThrottle is a pipe generator.\n\n    module.exports = (cycle) ->\n      lastFired = -Infinity\n      lastValue = undefined\n      timeout = null\n\n      (output) ->\n        (input) ->\n          lastValue = input\n\n          unless timeout\n            currentTime = +new Date\n            currentTime - lastFired\n\n            timeout = setTimeout ->\n              lastFired = +new Date\n              output(lastValue)\n              timeout = null\n            , lastFired + (cycle / 1000)\n",
+      "type": "blob"
     }
   },
   "distribution": {
@@ -63,12 +69,12 @@ window["distri/color-picker:master"]({
     },
     "main": {
       "path": "main",
-      "content": "(function() {\n  var Observable, Touchy, applyStylesheet, hue, lightness, saturation, swatch, update, x, y, _ref;\n\n  Observable = require(\"observable\");\n\n  Touchy = require(\"./lib/touchy\");\n\n  applyStylesheet = require(\"./util\").applyStylesheet;\n\n  applyStylesheet(require(\"./style\"));\n\n  document.body.appendChild(require(\"./template\")());\n\n  _ref = Touchy(document.querySelector(\".overlay.w\")), x = _ref.x, y = _ref.y;\n\n  hue = Touchy(document.querySelector(\".hue\")).y;\n\n  x.observe(function(newValue) {\n    var t;\n    t = newValue / 2;\n    saturation(newValue);\n    return lightness((1 - t) * y() + t);\n  });\n\n  y.observe(function(newValue) {\n    var t;\n    t = x() / 2;\n    return lightness((1 - t) * newValue + t);\n  });\n\n  saturation = Observable(1);\n\n  lightness = Observable(0.54);\n\n  swatch = document.querySelector(\".swatch\");\n\n  update = function() {\n    document.body.style.backgroundColor = \"hsl(\" + (hue() * 360) + \", 100%, 54%)\";\n    return swatch.style.backgroundColor = \"hsl(\" + (hue() * 360) + \", \" + (saturation() * 100) + \"%, \" + (lightness() * 100) + \"%)\";\n  };\n\n  lightness.observe(update);\n\n  saturation.observe(update);\n\n  hue.observe(update);\n\n  hue(0);\n\n  saturation(1);\n\n  lightness(0.54);\n\n}).call(this);\n\n//# sourceURL=main.coffee",
+      "content": "(function() {\n  var Observable, Touchy, applyStylesheet, hue, lightness, postmaster, saturation, swatch, update, x, y, _ref;\n\n  Observable = require(\"observable\");\n\n  Touchy = require(\"./lib/touchy\");\n\n  applyStylesheet = require(\"./util\").applyStylesheet;\n\n  applyStylesheet(require(\"./style\"));\n\n  document.body.appendChild(require(\"./template\")());\n\n  postmaster = require(\"postmaster\")();\n\n  _ref = Touchy(document.querySelector(\".overlay.w\")), x = _ref.x, y = _ref.y;\n\n  hue = Touchy(document.querySelector(\".hue\")).y;\n\n  x.observe(function(newValue) {\n    var t;\n    t = newValue / 2;\n    saturation(newValue);\n    return lightness((1 - t) * y() + t);\n  });\n\n  y.observe(function(newValue) {\n    var t;\n    t = x() / 2;\n    return lightness((1 - t) * newValue + t);\n  });\n\n  saturation = Observable(1);\n\n  lightness = Observable(0.54);\n\n  swatch = document.querySelector(\".swatch\");\n\n  update = function() {\n    var value;\n    document.body.style.backgroundColor = \"hsl(\" + (hue() * 360) + \", 100%, 54%)\";\n    value = \"hsl(\" + (hue() * 360) + \", \" + (saturation() * 100) + \"%, \" + (lightness() * 100) + \"%)\";\n    swatch.style.backgroundColor = value;\n    return postmaster.sendToParent({\n      value: value\n    });\n  };\n\n  lightness.observe(update);\n\n  saturation.observe(update);\n\n  hue.observe(update);\n\n  hue(0);\n\n  saturation(1);\n\n  lightness(0.54);\n\n}).call(this);\n\n//# sourceURL=main.coffee",
       "type": "blob"
     },
     "pixie": {
       "path": "pixie",
-      "content": "module.exports = {\"version\":\"0.1.0\",\"dependencies\":{\"observable\":\"distri/observable:v0.1.0\"}};",
+      "content": "module.exports = {\"version\":\"0.1.0\",\"dependencies\":{\"observable\":\"distri/observable:v0.1.0\",\"postmaster\":\"distri/postmaster:v0.2.1\"}};",
       "type": "blob"
     },
     "util": {
@@ -84,6 +90,11 @@ window["distri/color-picker:master"]({
     "lib/touchy": {
       "path": "lib/touchy",
       "content": "(function() {\n  var MAX, Observable, clamp, listen, localPosition, processTouches;\n\n  Observable = require(\"observable\");\n\n  MAX = 1;\n\n  module.exports = function(element, _arg) {\n    var active, emit, x, y, _ref;\n    _ref = _arg != null ? _arg : {}, x = _ref.x, y = _ref.y;\n    x = Observable(x);\n    y = Observable(y);\n    active = false;\n    emit = function(e) {\n      var position;\n      position = localPosition(element, e);\n      x(position.x);\n      return y(position.y);\n    };\n    listen(element, \"mousedown\", function(e) {\n      active = true;\n      return emit(e);\n    });\n    listen(element, \"touchstart\", function(e) {\n      return processTouches(event, emit);\n    });\n    listen(element, \"mousemove\", function(e) {\n      if (active) {\n        return emit(e);\n      }\n    });\n    listen(document, \"mousemove\", function(e) {\n      if (active) {\n        return emit(e);\n      }\n    });\n    listen(element, \"touchmove\", function(e) {\n      return processTouches(event, emit);\n    });\n    listen(element, \"mouseup\", function(e) {\n      emit(e);\n      active = false;\n    });\n    listen(element, \"touchend\", function(e) {\n      return processTouches(event, emit);\n    });\n    listen(document, \"mouseup\", function(e) {\n      if (active) {\n        emit(e);\n      }\n      active = false;\n    });\n    return {\n      x: x,\n      y: y\n    };\n  };\n\n  localPosition = function(element, event) {\n    var point, rect;\n    rect = element.getBoundingClientRect();\n    point = {\n      x: clamp((event.pageX - rect.left) / rect.width, 0, MAX),\n      y: clamp((event.pageY - rect.top) / rect.height, 0, MAX)\n    };\n    point.identifier = (event.identifier + 1) || 0;\n    return point;\n  };\n\n  processTouches = function(event, fn) {\n    var touches;\n    event.preventDefault();\n    if (event.type === \"touchend\") {\n      touches = event.changedTouches;\n    } else {\n      touches = event.touches;\n    }\n    return Array.prototype.forEach.call(touches, fn);\n  };\n\n  listen = function(element, event, handler) {\n    return element.addEventListener(event, handler, false);\n  };\n\n  clamp = function(number, min, max) {\n    return Math.min(Math.max(number, min), max);\n  };\n\n}).call(this);\n\n//# sourceURL=lib/touchy.coffee",
+      "type": "blob"
+    },
+    "lib/throttle": {
+      "path": "lib/throttle",
+      "content": "(function() {\n  module.exports = function(cycle) {\n    var lastFired, lastValue, timeout;\n    lastFired = -Infinity;\n    lastValue = void 0;\n    timeout = null;\n    return function(output) {\n      return function(input) {\n        var currentTime;\n        lastValue = input;\n        if (!timeout) {\n          currentTime = +(new Date);\n          currentTime - lastFired;\n          return timeout = setTimeout(function() {\n            lastFired = +(new Date);\n            output(lastValue);\n            return timeout = null;\n          }, lastFired + (cycle / 1000));\n        }\n      };\n    };\n  };\n\n}).call(this);\n\n//# sourceURL=lib/throttle.coffee",
       "type": "blob"
     },
     "_lib/hamljr_runtime": {
@@ -382,6 +393,178 @@ window["distri/color-picker:master"]({
         "subscribers_count": 2,
         "branch": "v0.1.0",
         "defaultBranch": "master"
+      },
+      "dependencies": {}
+    },
+    "postmaster": {
+      "source": {
+        "LICENSE": {
+          "path": "LICENSE",
+          "mode": "100644",
+          "content": "The MIT License (MIT)\n\nCopyright (c) 2013 distri\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n",
+          "type": "blob"
+        },
+        "README.md": {
+          "path": "README.md",
+          "mode": "100644",
+          "content": "postmaster\n==========\n\nSend and receive postMessage commands.\n",
+          "type": "blob"
+        },
+        "main.coffee.md": {
+          "path": "main.coffee.md",
+          "mode": "100644",
+          "content": "Postmaster\n==========\n\nPostmaster allows a child window that was opened from a parent window to\nreceive method calls from the parent window through the postMessage events.\n\nBind postMessage events to methods.\n\n    module.exports = (I={}, self={}) ->\n      # Only listening to messages from `opener`\n      addEventListener \"message\", (event) ->\n        if event.source is opener or event.source is parent\n          {method, params, id} = event.data\n\n          try\n            result = self[method](params...)\n\n            send\n              success:\n                id: id\n                result: result\n          catch error\n            send\n              error:\n                id: id\n                message: error.message\n                stack: error.stack\n\n      addEventListener \"unload\", ->\n        send\n          status: \"unload\"\n\n      # Tell our opener that we're ready\n      send\n        status: \"ready\"\n\n      self.sendToParent = send\n\n      return self\n\n    send = (data) ->\n      (opener or parent)?.postMessage data, \"*\"\n",
+          "type": "blob"
+        },
+        "pixie.cson": {
+          "path": "pixie.cson",
+          "mode": "100644",
+          "content": "version: \"0.2.1\"\n",
+          "type": "blob"
+        },
+        "test/postmaster.coffee": {
+          "path": "test/postmaster.coffee",
+          "mode": "100644",
+          "content": "Postmaster = require \"../main\"\n\ndescribe \"Postmaster\", ->\n  it \"should allow sending messages to parent\", ->\n    postmaster = Postmaster()\n\n    assert postmaster.sendToParent\n",
+          "type": "blob"
+        }
+      },
+      "distribution": {
+        "main": {
+          "path": "main",
+          "content": "(function() {\n  var send;\n\n  module.exports = function(I, self) {\n    if (I == null) {\n      I = {};\n    }\n    if (self == null) {\n      self = {};\n    }\n    addEventListener(\"message\", function(event) {\n      var error, id, method, params, result, _ref;\n      if (event.source === opener || event.source === parent) {\n        _ref = event.data, method = _ref.method, params = _ref.params, id = _ref.id;\n        try {\n          result = self[method].apply(self, params);\n          return send({\n            success: {\n              id: id,\n              result: result\n            }\n          });\n        } catch (_error) {\n          error = _error;\n          return send({\n            error: {\n              id: id,\n              message: error.message,\n              stack: error.stack\n            }\n          });\n        }\n      }\n    });\n    addEventListener(\"unload\", function() {\n      return send({\n        status: \"unload\"\n      });\n    });\n    send({\n      status: \"ready\"\n    });\n    self.sendToParent = send;\n    return self;\n  };\n\n  send = function(data) {\n    var _ref;\n    return (_ref = opener || parent) != null ? _ref.postMessage(data, \"*\") : void 0;\n  };\n\n}).call(this);\n\n//# sourceURL=main.coffee",
+          "type": "blob"
+        },
+        "pixie": {
+          "path": "pixie",
+          "content": "module.exports = {\"version\":\"0.2.1\"};",
+          "type": "blob"
+        },
+        "test/postmaster": {
+          "path": "test/postmaster",
+          "content": "(function() {\n  var Postmaster;\n\n  Postmaster = require(\"../main\");\n\n  describe(\"Postmaster\", function() {\n    return it(\"should allow sending messages to parent\", function() {\n      var postmaster;\n      postmaster = Postmaster();\n      return assert(postmaster.sendToParent);\n    });\n  });\n\n}).call(this);\n\n//# sourceURL=test/postmaster.coffee",
+          "type": "blob"
+        }
+      },
+      "progenitor": {
+        "url": "http://strd6.github.io/editor/"
+      },
+      "version": "0.2.1",
+      "entryPoint": "main",
+      "repository": {
+        "id": 15326478,
+        "name": "postmaster",
+        "full_name": "distri/postmaster",
+        "owner": {
+          "login": "distri",
+          "id": 6005125,
+          "avatar_url": "https://identicons.github.com/f90c81ffc1498e260c820082f2e7ca5f.png",
+          "gravatar_id": null,
+          "url": "https://api.github.com/users/distri",
+          "html_url": "https://github.com/distri",
+          "followers_url": "https://api.github.com/users/distri/followers",
+          "following_url": "https://api.github.com/users/distri/following{/other_user}",
+          "gists_url": "https://api.github.com/users/distri/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/distri/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/distri/subscriptions",
+          "organizations_url": "https://api.github.com/users/distri/orgs",
+          "repos_url": "https://api.github.com/users/distri/repos",
+          "events_url": "https://api.github.com/users/distri/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/distri/received_events",
+          "type": "Organization",
+          "site_admin": false
+        },
+        "private": false,
+        "html_url": "https://github.com/distri/postmaster",
+        "description": "Send and receive postMessage commands.",
+        "fork": false,
+        "url": "https://api.github.com/repos/distri/postmaster",
+        "forks_url": "https://api.github.com/repos/distri/postmaster/forks",
+        "keys_url": "https://api.github.com/repos/distri/postmaster/keys{/key_id}",
+        "collaborators_url": "https://api.github.com/repos/distri/postmaster/collaborators{/collaborator}",
+        "teams_url": "https://api.github.com/repos/distri/postmaster/teams",
+        "hooks_url": "https://api.github.com/repos/distri/postmaster/hooks",
+        "issue_events_url": "https://api.github.com/repos/distri/postmaster/issues/events{/number}",
+        "events_url": "https://api.github.com/repos/distri/postmaster/events",
+        "assignees_url": "https://api.github.com/repos/distri/postmaster/assignees{/user}",
+        "branches_url": "https://api.github.com/repos/distri/postmaster/branches{/branch}",
+        "tags_url": "https://api.github.com/repos/distri/postmaster/tags",
+        "blobs_url": "https://api.github.com/repos/distri/postmaster/git/blobs{/sha}",
+        "git_tags_url": "https://api.github.com/repos/distri/postmaster/git/tags{/sha}",
+        "git_refs_url": "https://api.github.com/repos/distri/postmaster/git/refs{/sha}",
+        "trees_url": "https://api.github.com/repos/distri/postmaster/git/trees{/sha}",
+        "statuses_url": "https://api.github.com/repos/distri/postmaster/statuses/{sha}",
+        "languages_url": "https://api.github.com/repos/distri/postmaster/languages",
+        "stargazers_url": "https://api.github.com/repos/distri/postmaster/stargazers",
+        "contributors_url": "https://api.github.com/repos/distri/postmaster/contributors",
+        "subscribers_url": "https://api.github.com/repos/distri/postmaster/subscribers",
+        "subscription_url": "https://api.github.com/repos/distri/postmaster/subscription",
+        "commits_url": "https://api.github.com/repos/distri/postmaster/commits{/sha}",
+        "git_commits_url": "https://api.github.com/repos/distri/postmaster/git/commits{/sha}",
+        "comments_url": "https://api.github.com/repos/distri/postmaster/comments{/number}",
+        "issue_comment_url": "https://api.github.com/repos/distri/postmaster/issues/comments/{number}",
+        "contents_url": "https://api.github.com/repos/distri/postmaster/contents/{+path}",
+        "compare_url": "https://api.github.com/repos/distri/postmaster/compare/{base}...{head}",
+        "merges_url": "https://api.github.com/repos/distri/postmaster/merges",
+        "archive_url": "https://api.github.com/repos/distri/postmaster/{archive_format}{/ref}",
+        "downloads_url": "https://api.github.com/repos/distri/postmaster/downloads",
+        "issues_url": "https://api.github.com/repos/distri/postmaster/issues{/number}",
+        "pulls_url": "https://api.github.com/repos/distri/postmaster/pulls{/number}",
+        "milestones_url": "https://api.github.com/repos/distri/postmaster/milestones{/number}",
+        "notifications_url": "https://api.github.com/repos/distri/postmaster/notifications{?since,all,participating}",
+        "labels_url": "https://api.github.com/repos/distri/postmaster/labels{/name}",
+        "releases_url": "https://api.github.com/repos/distri/postmaster/releases{/id}",
+        "created_at": "2013-12-20T00:42:15Z",
+        "updated_at": "2014-02-13T20:12:20Z",
+        "pushed_at": "2014-02-13T20:12:20Z",
+        "git_url": "git://github.com/distri/postmaster.git",
+        "ssh_url": "git@github.com:distri/postmaster.git",
+        "clone_url": "https://github.com/distri/postmaster.git",
+        "svn_url": "https://github.com/distri/postmaster",
+        "homepage": null,
+        "size": 152,
+        "stargazers_count": 0,
+        "watchers_count": 0,
+        "language": "CoffeeScript",
+        "has_issues": true,
+        "has_downloads": true,
+        "has_wiki": true,
+        "forks_count": 0,
+        "mirror_url": null,
+        "open_issues_count": 0,
+        "forks": 0,
+        "open_issues": 0,
+        "watchers": 0,
+        "default_branch": "master",
+        "master_branch": "master",
+        "permissions": {
+          "admin": true,
+          "push": true,
+          "pull": true
+        },
+        "organization": {
+          "login": "distri",
+          "id": 6005125,
+          "avatar_url": "https://identicons.github.com/f90c81ffc1498e260c820082f2e7ca5f.png",
+          "gravatar_id": null,
+          "url": "https://api.github.com/users/distri",
+          "html_url": "https://github.com/distri",
+          "followers_url": "https://api.github.com/users/distri/followers",
+          "following_url": "https://api.github.com/users/distri/following{/other_user}",
+          "gists_url": "https://api.github.com/users/distri/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/distri/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/distri/subscriptions",
+          "organizations_url": "https://api.github.com/users/distri/orgs",
+          "repos_url": "https://api.github.com/users/distri/repos",
+          "events_url": "https://api.github.com/users/distri/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/distri/received_events",
+          "type": "Organization",
+          "site_admin": false
+        },
+        "network_count": 0,
+        "subscribers_count": 2,
+        "branch": "v0.2.1",
+        "publishBranch": "gh-pages"
       },
       "dependencies": {}
     }
