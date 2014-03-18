@@ -29,15 +29,17 @@ Use the postmaster to send value to our parent, store our current value in it as
 Propagate newly received values.
 
     postmaster.value.observe (newValue) ->
-      [match, values...] = newValue.match HSL.matcher
+      if match = newValue.match HSL.matcher
+        [match, values...] = match
 
-      [h, s, l] = values.map parseFloat
+        [h, s, l] = values.map parseFloat
 
-      hue(h / 360)
-      saturation(s / 100)
-      lightness(l / 100)
+        hue(h / 360)
+        saturation(s / 100)
+        lightness(l / 100)
 
-      notifyParent(newValue)
+        location.hash = JSON.stringify(newValue)
+        notifyParent(newValue)
 
 Hook up observables. These map the x and y observable dimensions into names of 
 what they actually are.
@@ -63,8 +65,12 @@ Our swatch and background color update whenever a component value changes.
     swatch = document.querySelector(".swatch")
 
     update = ->
-      document.body.style.backgroundColor = "hsl(#{hue() * 360}, 100%, 54%)"
-      value = "hsl(#{hue() * 360}, #{saturation() * 100}%, #{lightness() * 100}%)"
+      h = Math.floor hue() * 360
+      s = Math.floor saturation() * 100
+      l = Math.floor lightness() * 100
+
+      document.body.style.backgroundColor = "hsl(#{h}, 100%, 54%)"
+      value = "hsl(#{h}, #{s}%, #{l}%)"
       swatch.style.backgroundColor = value
       postmaster.value value
 
