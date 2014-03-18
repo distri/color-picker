@@ -96,15 +96,17 @@ postmaster.value = Observable()</code></pre>
 
             </div>
             <div class="content"><pre><code class="lang-coffeescript">postmaster.value.observe (newValue) -&gt;
-  [match, values...] = newValue.match HSL.matcher
+  <span class="keyword">if</span> match = newValue.match HSL.matcher
+    [match, values...] = match
 
-  [h, s, l] = values.map parseFloat
+    [h, s, l] = values.map parseFloat
 
-  hue(h / <span class="number">360</span>)
-  saturation(s / <span class="number">100</span>)
-  lightness(l / <span class="number">100</span>)
+    hue(h / <span class="number">360</span>)
+    saturation(s / <span class="number">100</span>)
+    lightness(l / <span class="number">100</span>)
 
-  notifyParent(newValue)</code></pre>
+    location.hash = JSON.stringify(newValue)
+    notifyParent(newValue)</code></pre>
 </div>
         </li>
         
@@ -148,8 +150,12 @@ lightness = Observable(<span class="number">0.54</span>)</code></pre>
             <div class="content"><pre><code class="lang-coffeescript">swatch = document.querySelector(<span class="string">".swatch"</span>)
 
 <span class="function"><span class="title">update</span></span> = -&gt;
-  document.body.style.backgroundColor = <span class="string">"hsl(<span class="subst">#{hue() * <span class="number">360</span>}</span>, 100%, 54%)"</span>
-  value = <span class="string">"hsl(<span class="subst">#{hue() * <span class="number">360</span>}</span>, <span class="subst">#{saturation() * <span class="number">100</span>}</span>%, <span class="subst">#{lightness() * <span class="number">100</span>}</span>%)"</span>
+  h = Math.floor hue() * <span class="number">360</span>
+  s = Math.floor saturation() * <span class="number">100</span>
+  l = Math.floor lightness() * <span class="number">100</span>
+
+  document.body.style.backgroundColor = <span class="string">"hsl(<span class="subst">#{h}</span>, 100%, 54%)"</span>
+  value = <span class="string">"hsl(<span class="subst">#{h}</span>, <span class="subst">#{s}</span>%, <span class="subst">#{l}</span>%)"</span>
   swatch.style.backgroundColor = value
   postmaster.value value</code></pre>
 </div>
