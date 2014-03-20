@@ -41,7 +41,7 @@ Propagate newly received values.
         location.hash = JSON.stringify(newValue)
         notifyParent(newValue)
 
-Hook up observables. These map the x and y observable dimensions into names of 
+Hook up observables. These map the x and y observable dimensions into names of
 what they actually are.
 
     {x, y} = Touchy(document.querySelector(".overlay.w"))
@@ -84,7 +84,7 @@ Throttle notifications to parent to limit to `20/s`.
     saturation.observe update
     hue.observe update
 
-Initialize values. 
+Initialize values.
 
     if location.hash
       postmaster.value JSON.parse location.hash.substring(1)
