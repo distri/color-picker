@@ -27,7 +27,7 @@ window["distri/color-picker:master"]({
     "lib/touchy.coffee.md": {
       "path": "lib/touchy.coffee.md",
       "mode": "100644",
-      "content": "Touchy\n======\n\n    Observable = require \"observable\"\n\n    MAX = 1\n\nGet x,y position changes from mouse and touch events in an html element.\n\n    module.exports = (element, {x,y}={}) ->\n\n      x = Observable(x)\n      y = Observable(y)\n\n      # Keep track of if the mouse is active in the element\n      active = false\n\n      emit = (e) ->\n        position = localPosition(element, e)\n\n        x(position.x)\n        y(position.y)\n\nWhen we click within the element emit the values for the position we clicked at.\n\n      listen element, \"mousedown\", (e) ->\n        active = true\n\n        emit e\n\nHandle touch starts\n\n      listen element, \"touchstart\", (e) ->\n        # NOTE: Global `event`\n        processTouches event, emit\n\nWhen the mouse moves apply a change for each x value in the intervening positions.\n\n      listen element, \"mousemove\", (e) ->\n        emit(e) if active\n\nHandle moves outside of the element.\n\n      listen document, \"mousemove\", (e) ->\n        emit(e) if active\n\nHandle touch moves.\n\n      listen element, \"touchmove\", (e) ->\n        # NOTE: Global `event`\n        processTouches event, emit\n\nHandle releases.\n\n      listen element, \"mouseup\", (e) ->\n        emit e\n\n        active = false\n\n        return\n\nHandle touch ends.\n\n      listen element, \"touchend\", (e) ->\n        # NOTE: Global `event`\n        processTouches event, emit\n\nWhenever the mouse button is released from anywhere, deactivate. Be sure to emit \nthe position if it was activated within the element.\n\n      listen document, \"mouseup\", (e) ->\n        emit(e) if active\n    \n        active = false\n    \n        return\n\n      x: x\n      y: y\n\nHelpers\n-------\n\n    localPosition = (element, event) ->\n      rect = element.getBoundingClientRect()\n\n      point =\n        x: clamp (event.pageX - rect.left) / rect.width, 0, MAX\n        y: clamp (event.pageY - rect.top) / rect.height, 0, MAX\n\n      # Add mouse into touch identifiers as 0\n      point.identifier = (event.identifier + 1) or 0\n\n      return point\n\n    processTouches = (event, fn) ->\n      event.preventDefault()\n  \n      if event.type is \"touchend\"\n        # touchend doesn't have any touches, but does have changed touches\n        touches = event.changedTouches\n      else\n        touches = event.touches\n\n      Array::forEach.call touches, fn\n\nAttach an event listener to an element\n\n    listen = (element, event, handler) ->\n      element.addEventListener(event, handler, false)\n\nClamp a number to be within a range.\n\n    clamp = (number, min, max) ->\n      Math.min(Math.max(number, min), max)\n",
+      "content": "Touchy\n======\n\n    Observable = require \"observable\"\n\n    MAX = 1\n\nGet x,y position changes from mouse and touch events in an html element.\n\n    module.exports = (element, {x,y}={}) ->\n\n      x = Observable(x)\n      y = Observable(y)\n\n      # Keep track of if the mouse is active in the element\n      active = false\n\n      emit = (e) ->\n        position = localPosition(element, e)\n\n        x(position.x)\n        y(position.y)\n\nWhen we click within the element emit the values for the position we clicked at.\n\n      listen element, \"mousedown\", (e) ->\n        active = true\n\n        emit e\n\nHandle touch starts\n\n      listen element, \"touchstart\", (e) ->\n        # NOTE: Global `event`\n        processTouches event, emit\n\nWhen the mouse moves apply a change for each x value in the intervening positions.\n\n      listen element, \"mousemove\", (e) ->\n        emit(e) if active\n\nHandle moves outside of the element.\n\n      listen document, \"mousemove\", (e) ->\n        emit(e) if active\n\nHandle touch moves.\n\n      listen element, \"touchmove\", (e) ->\n        # NOTE: Global `event`\n        processTouches event, emit\n\nHandle releases.\n\n      listen element, \"mouseup\", (e) ->\n        emit e\n\n        active = false\n\n        return\n\nHandle touch ends.\n\n      listen element, \"touchend\", (e) ->\n        # NOTE: Global `event`\n        processTouches event, emit\n\nWhenever the mouse button is released from anywhere, deactivate. Be sure to emit\nthe position if it was activated within the element.\n\n      listen document, \"mouseup\", (e) ->\n        emit(e) if active\n\n        active = false\n\n        return\n\n      x: x\n      y: y\n\nHelpers\n-------\n\n    localPosition = (element, event) ->\n      rect = element.getBoundingClientRect()\n\n      point =\n        x: clamp (event.pageX - rect.left) / rect.width, 0, MAX\n        y: clamp (event.pageY - rect.top) / rect.height, 0, MAX\n\n      # Add mouse into touch identifiers as 0\n      point.identifier = (event.identifier + 1) or 0\n\n      return point\n\n    processTouches = (event, fn) ->\n      event.preventDefault()\n\n      if event.type is \"touchend\"\n        # touchend doesn't have any touches, but does have changed touches\n        touches = event.changedTouches\n      else\n        touches = event.touches\n\n      Array::forEach.call touches, fn\n\nAttach an event listener to an element\n\n    listen = (element, event, handler) ->\n      element.addEventListener(event, handler, false)\n\nClamp a number to be within a range.\n\n    clamp = (number, min, max) ->\n      Math.min(Math.max(number, min), max)\n",
       "type": "blob"
     },
     "main.coffee.md": {
@@ -39,7 +39,7 @@ window["distri/color-picker:master"]({
     "pixie.cson": {
       "path": "pixie.cson",
       "mode": "100644",
-      "content": "version: \"0.1.0\"\ndependencies:\n  observable: \"distri/observable:v0.1.0\"\n  postmaster: \"distri/postmaster:v0.2.1\"\n",
+      "content": "version: \"0.1.0\"\ndependencies:\n  observable: \"distri/observable:v0.1.0\"\n  postmaster: \"distri/postmaster:v0.2.2\"\n",
       "type": "blob"
     },
     "scrap": {
@@ -70,27 +70,27 @@ window["distri/color-picker:master"]({
   "distribution": {
     "lib/hsl": {
       "path": "lib/hsl",
-      "content": "(function() {\n  module.exports = {\n    matcher: /hsl\\(([\\d.]+),\\s*([\\d.]+)%,\\s*([\\d.]+)%\\)/\n  };\n\n}).call(this);\n\n//# sourceURL=lib/hsl.coffee",
+      "content": "(function() {\n  module.exports = {\n    matcher: /hsl\\(([\\d.]+),\\s*([\\d.]+)%,\\s*([\\d.]+)%\\)/\n  };\n\n}).call(this);\n",
       "type": "blob"
     },
     "lib/throttle": {
       "path": "lib/throttle",
-      "content": "(function() {\n  module.exports = function(cycle) {\n    var lastFired, lastValue, t, timeout;\n    lastFired = -Infinity;\n    lastValue = void 0;\n    timeout = null;\n    t = cycle * 1000;\n    return function(output) {\n      return function(input) {\n        var currentTime, delta, target;\n        lastValue = input;\n        if (!timeout) {\n          currentTime = +(new Date);\n          delta = currentTime - lastFired;\n          target = t - delta;\n          return timeout = setTimeout(function() {\n            lastFired = +(new Date);\n            output(lastValue);\n            return timeout = null;\n          }, target);\n        }\n      };\n    };\n  };\n\n}).call(this);\n\n//# sourceURL=lib/throttle.coffee",
+      "content": "(function() {\n  module.exports = function(cycle) {\n    var lastFired, lastValue, t, timeout;\n    lastFired = -Infinity;\n    lastValue = void 0;\n    timeout = null;\n    t = cycle * 1000;\n    return function(output) {\n      return function(input) {\n        var currentTime, delta, target;\n        lastValue = input;\n        if (!timeout) {\n          currentTime = +(new Date);\n          delta = currentTime - lastFired;\n          target = t - delta;\n          return timeout = setTimeout(function() {\n            lastFired = +(new Date);\n            output(lastValue);\n            return timeout = null;\n          }, target);\n        }\n      };\n    };\n  };\n\n}).call(this);\n",
       "type": "blob"
     },
     "lib/touchy": {
       "path": "lib/touchy",
-      "content": "(function() {\n  var MAX, Observable, clamp, listen, localPosition, processTouches;\n\n  Observable = require(\"observable\");\n\n  MAX = 1;\n\n  module.exports = function(element, _arg) {\n    var active, emit, x, y, _ref;\n    _ref = _arg != null ? _arg : {}, x = _ref.x, y = _ref.y;\n    x = Observable(x);\n    y = Observable(y);\n    active = false;\n    emit = function(e) {\n      var position;\n      position = localPosition(element, e);\n      x(position.x);\n      return y(position.y);\n    };\n    listen(element, \"mousedown\", function(e) {\n      active = true;\n      return emit(e);\n    });\n    listen(element, \"touchstart\", function(e) {\n      return processTouches(event, emit);\n    });\n    listen(element, \"mousemove\", function(e) {\n      if (active) {\n        return emit(e);\n      }\n    });\n    listen(document, \"mousemove\", function(e) {\n      if (active) {\n        return emit(e);\n      }\n    });\n    listen(element, \"touchmove\", function(e) {\n      return processTouches(event, emit);\n    });\n    listen(element, \"mouseup\", function(e) {\n      emit(e);\n      active = false;\n    });\n    listen(element, \"touchend\", function(e) {\n      return processTouches(event, emit);\n    });\n    listen(document, \"mouseup\", function(e) {\n      if (active) {\n        emit(e);\n      }\n      active = false;\n    });\n    return {\n      x: x,\n      y: y\n    };\n  };\n\n  localPosition = function(element, event) {\n    var point, rect;\n    rect = element.getBoundingClientRect();\n    point = {\n      x: clamp((event.pageX - rect.left) / rect.width, 0, MAX),\n      y: clamp((event.pageY - rect.top) / rect.height, 0, MAX)\n    };\n    point.identifier = (event.identifier + 1) || 0;\n    return point;\n  };\n\n  processTouches = function(event, fn) {\n    var touches;\n    event.preventDefault();\n    if (event.type === \"touchend\") {\n      touches = event.changedTouches;\n    } else {\n      touches = event.touches;\n    }\n    return Array.prototype.forEach.call(touches, fn);\n  };\n\n  listen = function(element, event, handler) {\n    return element.addEventListener(event, handler, false);\n  };\n\n  clamp = function(number, min, max) {\n    return Math.min(Math.max(number, min), max);\n  };\n\n}).call(this);\n\n//# sourceURL=lib/touchy.coffee",
+      "content": "(function() {\n  var MAX, Observable, clamp, listen, localPosition, processTouches;\n\n  Observable = require(\"observable\");\n\n  MAX = 1;\n\n  module.exports = function(element, _arg) {\n    var active, emit, x, y, _ref;\n    _ref = _arg != null ? _arg : {}, x = _ref.x, y = _ref.y;\n    x = Observable(x);\n    y = Observable(y);\n    active = false;\n    emit = function(e) {\n      var position;\n      position = localPosition(element, e);\n      x(position.x);\n      return y(position.y);\n    };\n    listen(element, \"mousedown\", function(e) {\n      active = true;\n      return emit(e);\n    });\n    listen(element, \"touchstart\", function(e) {\n      return processTouches(event, emit);\n    });\n    listen(element, \"mousemove\", function(e) {\n      if (active) {\n        return emit(e);\n      }\n    });\n    listen(document, \"mousemove\", function(e) {\n      if (active) {\n        return emit(e);\n      }\n    });\n    listen(element, \"touchmove\", function(e) {\n      return processTouches(event, emit);\n    });\n    listen(element, \"mouseup\", function(e) {\n      emit(e);\n      active = false;\n    });\n    listen(element, \"touchend\", function(e) {\n      return processTouches(event, emit);\n    });\n    listen(document, \"mouseup\", function(e) {\n      if (active) {\n        emit(e);\n      }\n      active = false;\n    });\n    return {\n      x: x,\n      y: y\n    };\n  };\n\n  localPosition = function(element, event) {\n    var point, rect;\n    rect = element.getBoundingClientRect();\n    point = {\n      x: clamp((event.pageX - rect.left) / rect.width, 0, MAX),\n      y: clamp((event.pageY - rect.top) / rect.height, 0, MAX)\n    };\n    point.identifier = (event.identifier + 1) || 0;\n    return point;\n  };\n\n  processTouches = function(event, fn) {\n    var touches;\n    event.preventDefault();\n    if (event.type === \"touchend\") {\n      touches = event.changedTouches;\n    } else {\n      touches = event.touches;\n    }\n    return Array.prototype.forEach.call(touches, fn);\n  };\n\n  listen = function(element, event, handler) {\n    return element.addEventListener(event, handler, false);\n  };\n\n  clamp = function(number, min, max) {\n    return Math.min(Math.max(number, min), max);\n  };\n\n}).call(this);\n",
       "type": "blob"
     },
     "main": {
       "path": "main",
-      "content": "(function() {\n  var HSL, Observable, Throttle, Touchy, applyStylesheet, hue, lightness, notifyParent, postmaster, saturation, swatch, update, x, y, _ref,\n    __slice = [].slice;\n\n  Observable = require(\"observable\");\n\n  Touchy = require(\"./lib/touchy\");\n\n  Throttle = require(\"./lib/throttle\");\n\n  HSL = require(\"./lib/hsl\");\n\n  applyStylesheet = require(\"./util\").applyStylesheet;\n\n  applyStylesheet(require(\"./style\"));\n\n  document.body.appendChild(require(\"./template\")());\n\n  postmaster = require(\"postmaster\")();\n\n  postmaster.value = Observable();\n\n  postmaster.value.observe(function(newValue) {\n    var h, l, match, s, values, _ref, _ref1;\n    if (match = newValue.match(HSL.matcher)) {\n      _ref = match, match = _ref[0], values = 2 <= _ref.length ? __slice.call(_ref, 1) : [];\n      _ref1 = values.map(parseFloat), h = _ref1[0], s = _ref1[1], l = _ref1[2];\n      hue(h / 360);\n      saturation(s / 100);\n      lightness(l / 100);\n      location.hash = JSON.stringify(newValue);\n      return notifyParent(newValue);\n    }\n  });\n\n  _ref = Touchy(document.querySelector(\".overlay.w\")), x = _ref.x, y = _ref.y;\n\n  hue = Touchy(document.querySelector(\".hue\")).y;\n\n  x.observe(function(newValue) {\n    var t;\n    t = newValue / 2;\n    saturation(newValue);\n    return lightness((1 - t) * y() + t);\n  });\n\n  y.observe(function(newValue) {\n    var t;\n    t = x() / 2;\n    return lightness((1 - t) * newValue + t);\n  });\n\n  saturation = Observable(1);\n\n  lightness = Observable(0.54);\n\n  swatch = document.querySelector(\".swatch\");\n\n  update = function() {\n    var h, l, s, value;\n    h = Math.floor(hue() * 360);\n    s = Math.floor(saturation() * 100);\n    l = Math.floor(lightness() * 100);\n    document.body.style.backgroundColor = \"hsl(\" + h + \", 100%, 54%)\";\n    value = \"hsl(\" + h + \", \" + s + \"%, \" + l + \"%)\";\n    swatch.style.backgroundColor = value;\n    return postmaster.value(value);\n  };\n\n  notifyParent = Throttle(0.05)(function(value) {\n    return postmaster.sendToParent({\n      value: value\n    });\n  });\n\n  lightness.observe(update);\n\n  saturation.observe(update);\n\n  hue.observe(update);\n\n  if (location.hash) {\n    postmaster.value(JSON.parse(location.hash.substring(1)));\n  } else {\n    hue(0);\n    saturation(1);\n    lightness(0.54);\n  }\n\n}).call(this);\n\n//# sourceURL=main.coffee",
+      "content": "(function() {\n  var HSL, Observable, Throttle, Touchy, applyStylesheet, hue, lightness, notifyParent, postmaster, saturation, swatch, update, x, y, _ref,\n    __slice = [].slice;\n\n  Observable = require(\"observable\");\n\n  Touchy = require(\"./lib/touchy\");\n\n  Throttle = require(\"./lib/throttle\");\n\n  HSL = require(\"./lib/hsl\");\n\n  applyStylesheet = require(\"./util\").applyStylesheet;\n\n  applyStylesheet(require(\"./style\"));\n\n  document.body.appendChild(require(\"./template\")());\n\n  postmaster = require(\"postmaster\")();\n\n  postmaster.value = Observable();\n\n  postmaster.value.observe(function(newValue) {\n    var h, l, match, s, values, _ref, _ref1;\n    if (match = newValue.match(HSL.matcher)) {\n      _ref = match, match = _ref[0], values = 2 <= _ref.length ? __slice.call(_ref, 1) : [];\n      _ref1 = values.map(parseFloat), h = _ref1[0], s = _ref1[1], l = _ref1[2];\n      hue(h / 360);\n      saturation(s / 100);\n      lightness(l / 100);\n      location.hash = JSON.stringify(newValue);\n      return notifyParent(newValue);\n    }\n  });\n\n  _ref = Touchy(document.querySelector(\".overlay.w\")), x = _ref.x, y = _ref.y;\n\n  hue = Touchy(document.querySelector(\".hue\")).y;\n\n  x.observe(function(newValue) {\n    var t;\n    t = newValue / 2;\n    saturation(newValue);\n    return lightness((1 - t) * y() + t);\n  });\n\n  y.observe(function(newValue) {\n    var t;\n    t = x() / 2;\n    return lightness((1 - t) * newValue + t);\n  });\n\n  saturation = Observable(1);\n\n  lightness = Observable(0.54);\n\n  swatch = document.querySelector(\".swatch\");\n\n  update = function() {\n    var h, l, s, value;\n    h = Math.floor(hue() * 360);\n    s = Math.floor(saturation() * 100);\n    l = Math.floor(lightness() * 100);\n    document.body.style.backgroundColor = \"hsl(\" + h + \", 100%, 54%)\";\n    value = \"hsl(\" + h + \", \" + s + \"%, \" + l + \"%)\";\n    swatch.style.backgroundColor = value;\n    return postmaster.value(value);\n  };\n\n  notifyParent = Throttle(0.05)(function(value) {\n    return postmaster.sendToParent({\n      value: value\n    });\n  });\n\n  lightness.observe(update);\n\n  saturation.observe(update);\n\n  hue.observe(update);\n\n  if (location.hash) {\n    postmaster.value(JSON.parse(location.hash.substring(1)));\n  } else {\n    hue(0);\n    saturation(1);\n    lightness(0.54);\n  }\n\n}).call(this);\n",
       "type": "blob"
     },
     "pixie": {
       "path": "pixie",
-      "content": "module.exports = {\"version\":\"0.1.0\",\"dependencies\":{\"observable\":\"distri/observable:v0.1.0\",\"postmaster\":\"distri/postmaster:v0.2.1\"}};",
+      "content": "module.exports = {\"version\":\"0.1.0\",\"dependencies\":{\"observable\":\"distri/observable:v0.1.0\",\"postmaster\":\"distri/postmaster:v0.2.2\"}};",
       "type": "blob"
     },
     "style": {
@@ -105,7 +105,7 @@ window["distri/color-picker:master"]({
     },
     "util": {
       "path": "util",
-      "content": "(function() {\n  module.exports = {\n    applyStylesheet: function(style, id) {\n      var previousStyleNode, styleNode;\n      if (id == null) {\n        id = \"primary\";\n      }\n      styleNode = document.createElement(\"style\");\n      styleNode.innerHTML = style;\n      styleNode.id = id;\n      if (previousStyleNode = document.head.querySelector(\"style#\" + id)) {\n        previousStyleNode.parentNode.removeChild(prevousStyleNode);\n      }\n      return document.head.appendChild(styleNode);\n    }\n  };\n\n}).call(this);\n\n//# sourceURL=util.coffee",
+      "content": "(function() {\n  module.exports = {\n    applyStylesheet: function(style, id) {\n      var previousStyleNode, styleNode;\n      if (id == null) {\n        id = \"primary\";\n      }\n      styleNode = document.createElement(\"style\");\n      styleNode.innerHTML = style;\n      styleNode.id = id;\n      if (previousStyleNode = document.head.querySelector(\"style#\" + id)) {\n        previousStyleNode.parentNode.removeChild(prevousStyleNode);\n      }\n      return document.head.appendChild(styleNode);\n    }\n  };\n\n}).call(this);\n",
       "type": "blob"
     },
     "_lib/hamljr_runtime": {
@@ -183,14 +183,14 @@ window["distri/color-picker:master"]({
     "labels_url": "https://api.github.com/repos/distri/color-picker/labels{/name}",
     "releases_url": "https://api.github.com/repos/distri/color-picker/releases{/id}",
     "created_at": "2014-03-16T18:39:28Z",
-    "updated_at": "2014-03-18T00:01:31Z",
-    "pushed_at": "2014-03-18T00:01:31Z",
+    "updated_at": "2014-03-20T19:38:04Z",
+    "pushed_at": "2014-03-20T19:38:04Z",
     "git_url": "git://github.com/distri/color-picker.git",
     "ssh_url": "git@github.com:distri/color-picker.git",
     "clone_url": "https://github.com/distri/color-picker.git",
     "svn_url": "https://github.com/distri/color-picker",
     "homepage": null,
-    "size": 0,
+    "size": 224,
     "stargazers_count": 0,
     "watchers_count": 0,
     "language": "CSS",
@@ -424,43 +424,43 @@ window["distri/color-picker:master"]({
         "main.coffee.md": {
           "path": "main.coffee.md",
           "mode": "100644",
-          "content": "Postmaster\n==========\n\nPostmaster allows a child window that was opened from a parent window to\nreceive method calls from the parent window through the postMessage events.\n\nBind postMessage events to methods.\n\n    module.exports = (I={}, self={}) ->\n      # Only listening to messages from `opener`\n      addEventListener \"message\", (event) ->\n        if event.source is opener or event.source is parent\n          {method, params, id} = event.data\n\n          try\n            result = self[method](params...)\n\n            send\n              success:\n                id: id\n                result: result\n          catch error\n            send\n              error:\n                id: id\n                message: error.message\n                stack: error.stack\n\n      addEventListener \"unload\", ->\n        send\n          status: \"unload\"\n\n      # Tell our opener that we're ready\n      send\n        status: \"ready\"\n\n      self.sendToParent = send\n\n      return self\n\n    send = (data) ->\n      (opener or parent)?.postMessage data, \"*\"\n",
+          "content": "Postmaster\n==========\n\nPostmaster allows a child window that was opened from a parent window to\nreceive method calls from the parent window through the postMessage events.\n\nFigure out who we should be listening to.\n\n    dominant = opener or ((parent != window) and parent) or undefined\n\nBind postMessage events to methods.\n\n    module.exports = (I={}, self={}) ->\n      # Only listening to messages from `opener`\n      addEventListener \"message\", (event) ->\n        if event.source is dominant\n          {method, params, id} = event.data\n\n          try\n            result = self[method](params...)\n\n            send\n              success:\n                id: id\n                result: result\n          catch error\n            send\n              error:\n                id: id\n                message: error.message\n                stack: error.stack\n\n      addEventListener \"unload\", ->\n        send\n          status: \"unload\"\n\n      # Tell our opener that we're ready\n      send\n        status: \"ready\"\n\n      self.sendToParent = send\n\n      return self\n\n    send = (data) ->\n      dominant?.postMessage data, \"*\"\n",
           "type": "blob"
         },
         "pixie.cson": {
           "path": "pixie.cson",
           "mode": "100644",
-          "content": "version: \"0.2.1\"\n",
+          "content": "version: \"0.2.2\"\n",
           "type": "blob"
         },
         "test/postmaster.coffee": {
           "path": "test/postmaster.coffee",
           "mode": "100644",
-          "content": "Postmaster = require \"../main\"\n\ndescribe \"Postmaster\", ->\n  it \"should allow sending messages to parent\", ->\n    postmaster = Postmaster()\n\n    assert postmaster.sendToParent\n",
+          "content": "Postmaster = require \"../main\"\n\ndescribe \"Postmaster\", ->\n  it \"should allow sending messages to parent\", ->\n    postmaster = Postmaster()\n\n    postmaster.sendToParent\n      radical: \"true\"\n",
           "type": "blob"
         }
       },
       "distribution": {
         "main": {
           "path": "main",
-          "content": "(function() {\n  var send;\n\n  module.exports = function(I, self) {\n    if (I == null) {\n      I = {};\n    }\n    if (self == null) {\n      self = {};\n    }\n    addEventListener(\"message\", function(event) {\n      var error, id, method, params, result, _ref;\n      if (event.source === opener || event.source === parent) {\n        _ref = event.data, method = _ref.method, params = _ref.params, id = _ref.id;\n        try {\n          result = self[method].apply(self, params);\n          return send({\n            success: {\n              id: id,\n              result: result\n            }\n          });\n        } catch (_error) {\n          error = _error;\n          return send({\n            error: {\n              id: id,\n              message: error.message,\n              stack: error.stack\n            }\n          });\n        }\n      }\n    });\n    addEventListener(\"unload\", function() {\n      return send({\n        status: \"unload\"\n      });\n    });\n    send({\n      status: \"ready\"\n    });\n    self.sendToParent = send;\n    return self;\n  };\n\n  send = function(data) {\n    var _ref;\n    return (_ref = opener || parent) != null ? _ref.postMessage(data, \"*\") : void 0;\n  };\n\n}).call(this);\n\n//# sourceURL=main.coffee",
+          "content": "(function() {\n  var dominant, send;\n\n  dominant = opener || ((parent !== window) && parent) || void 0;\n\n  module.exports = function(I, self) {\n    if (I == null) {\n      I = {};\n    }\n    if (self == null) {\n      self = {};\n    }\n    addEventListener(\"message\", function(event) {\n      var error, id, method, params, result, _ref;\n      if (event.source === dominant) {\n        _ref = event.data, method = _ref.method, params = _ref.params, id = _ref.id;\n        try {\n          result = self[method].apply(self, params);\n          return send({\n            success: {\n              id: id,\n              result: result\n            }\n          });\n        } catch (_error) {\n          error = _error;\n          return send({\n            error: {\n              id: id,\n              message: error.message,\n              stack: error.stack\n            }\n          });\n        }\n      }\n    });\n    addEventListener(\"unload\", function() {\n      return send({\n        status: \"unload\"\n      });\n    });\n    send({\n      status: \"ready\"\n    });\n    self.sendToParent = send;\n    return self;\n  };\n\n  send = function(data) {\n    return dominant != null ? dominant.postMessage(data, \"*\") : void 0;\n  };\n\n}).call(this);\n",
           "type": "blob"
         },
         "pixie": {
           "path": "pixie",
-          "content": "module.exports = {\"version\":\"0.2.1\"};",
+          "content": "module.exports = {\"version\":\"0.2.2\"};",
           "type": "blob"
         },
         "test/postmaster": {
           "path": "test/postmaster",
-          "content": "(function() {\n  var Postmaster;\n\n  Postmaster = require(\"../main\");\n\n  describe(\"Postmaster\", function() {\n    return it(\"should allow sending messages to parent\", function() {\n      var postmaster;\n      postmaster = Postmaster();\n      return assert(postmaster.sendToParent);\n    });\n  });\n\n}).call(this);\n\n//# sourceURL=test/postmaster.coffee",
+          "content": "(function() {\n  var Postmaster;\n\n  Postmaster = require(\"../main\");\n\n  describe(\"Postmaster\", function() {\n    return it(\"should allow sending messages to parent\", function() {\n      var postmaster;\n      postmaster = Postmaster();\n      return postmaster.sendToParent({\n        radical: \"true\"\n      });\n    });\n  });\n\n}).call(this);\n",
           "type": "blob"
         }
       },
       "progenitor": {
         "url": "http://strd6.github.io/editor/"
       },
-      "version": "0.2.1",
+      "version": "0.2.2",
       "entryPoint": "main",
       "repository": {
         "id": 15326478,
@@ -469,8 +469,8 @@ window["distri/color-picker:master"]({
         "owner": {
           "login": "distri",
           "id": 6005125,
-          "avatar_url": "https://identicons.github.com/f90c81ffc1498e260c820082f2e7ca5f.png",
-          "gravatar_id": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/6005125?",
+          "gravatar_id": "192f3f168409e79c42107f081139d9f3",
           "url": "https://api.github.com/users/distri",
           "html_url": "https://github.com/distri",
           "followers_url": "https://api.github.com/users/distri/followers",
@@ -526,14 +526,14 @@ window["distri/color-picker:master"]({
         "labels_url": "https://api.github.com/repos/distri/postmaster/labels{/name}",
         "releases_url": "https://api.github.com/repos/distri/postmaster/releases{/id}",
         "created_at": "2013-12-20T00:42:15Z",
-        "updated_at": "2014-02-13T20:12:20Z",
-        "pushed_at": "2014-02-13T20:12:20Z",
+        "updated_at": "2014-03-06T19:53:51Z",
+        "pushed_at": "2014-03-06T19:53:51Z",
         "git_url": "git://github.com/distri/postmaster.git",
         "ssh_url": "git@github.com:distri/postmaster.git",
         "clone_url": "https://github.com/distri/postmaster.git",
         "svn_url": "https://github.com/distri/postmaster",
         "homepage": null,
-        "size": 152,
+        "size": 172,
         "stargazers_count": 0,
         "watchers_count": 0,
         "language": "CoffeeScript",
@@ -556,8 +556,8 @@ window["distri/color-picker:master"]({
         "organization": {
           "login": "distri",
           "id": 6005125,
-          "avatar_url": "https://identicons.github.com/f90c81ffc1498e260c820082f2e7ca5f.png",
-          "gravatar_id": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/6005125?",
+          "gravatar_id": "192f3f168409e79c42107f081139d9f3",
           "url": "https://api.github.com/users/distri",
           "html_url": "https://github.com/distri",
           "followers_url": "https://api.github.com/users/distri/followers",
@@ -574,7 +574,7 @@ window["distri/color-picker:master"]({
         },
         "network_count": 0,
         "subscribers_count": 2,
-        "branch": "v0.2.1",
+        "branch": "v0.2.2",
         "publishBranch": "gh-pages"
       },
       "dependencies": {}
