@@ -65,14 +65,14 @@ Handle touch ends.
         # NOTE: Global `event`
         processTouches event, emit
 
-Whenever the mouse button is released from anywhere, deactivate. Be sure to emit 
+Whenever the mouse button is released from anywhere, deactivate. Be sure to emit
 the position if it was activated within the element.
 
       listen document, "mouseup", (e) ->
         emit(e) if active
-    
+
         active = false
-    
+
         return
 
       x: x
@@ -95,7 +95,7 @@ Helpers
 
     processTouches = (event, fn) ->
       event.preventDefault()
-  
+
       if event.type is "touchend"
         # touchend doesn't have any touches, but does have changed touches
         touches = event.changedTouches
